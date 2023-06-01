@@ -1,6 +1,7 @@
-const yaml = require('js-yaml');
 const fs = require('fs');
-const configFilePath = process.argv[2] ?? 'test.yml';
+const yaml = require('js-yaml');
+
+const configFilePath = process.argv[2];
 const pollInterval = process.argv[3] ?? 15000;
 const timeout = process.argv[4] ?? 500;
 
@@ -8,73 +9,78 @@ const timeout = process.argv[4] ?? 500;
 
 // and of course if this was going to be used as anything other then a script you would probably want pure functions or perhaps a oop architecture
 
-let configData;
-try {
-  configData = yaml.load(fs.readFileSync(configFilePath, 'utf8'));
-} catch (err) {
-  console.error(err);
-}
+if (!configFilePath) throw new Error('No input file specified');
+
+const configData = yaml.load(fs.readFileSync(configFilePath, 'utf8'));
 
 const cumulativeData = {};
-for (const { name } of configData) cumulativeData[name] = { success: 0, total: 0 };
+for (const { url } of configData) {
+  const domain = new URL(url).hostname;
+  cumulativeData[domain] = { success: 0, total: 0 };
+}
 
-const makeRequest = (url, name, body, headers, method = 'GET') =>
+const makeRequest = (url, body, headers, method = 'GET') =>
   new Promise((resolve, reject) => {
     const controller = new AbortController();
     const signal = controller.signal;
-
+    const domain = new URL(url).hostname;
     fetch(url, {
       method,
       body,
       headers,
       signal,
+      redirect: 'error', // redirects wouldn't be in 200-299 range
     })
       .then((res) => {
         let success;
         if (res.status >= 200 && res.status <= 299) success = true;
         else success = false;
         resolve({
-          name,
+          domain,
           success,
         });
       })
       .catch((err) => {
         resolve({
-          name,
+          domain,
           success: false,
         });
       });
 
     setTimeout(() => {
-      controller.abort();
-      resolve({ name, success: false });
+      try {
+        controller.abort();
+      } catch (err) {
+        console.error(err);
+      }
+      resolve({ domain, success: false });
     }, timeout);
   });
 
 const main = async () => {
   const requests = [];
-  for (const { url, name, method, body, headers } of configData) {
-    requests.push(makeRequest(url, name, body, headers, method));
+  for (const { url, method, body, headers } of configData) {
+    requests.push(makeRequest(url, body, headers, method));
   }
 
   const completedRequests = await Promise.allSettled(requests);
   for await (const { value } of completedRequests) {
-    if (value.success) cumulativeData[value.name].success += 1;
-    cumulativeData[value.name].total += 1;
+    if (value.success) cumulativeData[value.domain].success += 1;
+    cumulativeData[value.domain].total += 1;
   }
 
-  for (const name in cumulativeData) {
-    const { success, total } = cumulativeData[name];
+  for (const domain in cumulativeData) {
+    const { success, total } = cumulativeData[domain];
 
     const availability = Math.round((success / total) * 100);
 
-    // completely arbitrary thresholds
+    // completely arbitrary thresholds, weird chars are to change console.log colors
     if (availability === 100) {
-      console.log(`\x1b[35m${name}\x1b[0m has \x1b[32m${availability}%\x1b[0m availability percentage`);
+      console.log(`\x1b[35m${domain}\x1b[0m has \x1b[32m${availability}%\x1b[0m availability percentage`);
     } else if (availability === 99 || availability === 98) {
-      console.log(`\x1b[35m${name}\x1b[0m has \x1b[33m${availability}%\x1b[0m availability percentage`);
+      console.log(`\x1b[35m${domain}\x1b[0m has \x1b[33m${availability}%\x1b[0m availability percentage`);
     } else {
-      console.log(`\x1b[35m${name}\x1b[0m has \x1b[31m${availability}%\x1b[0m availability percentage`);
+      console.log(`\x1b[35m${domain}\x1b[0m has \x1b[31m${availability}%\x1b[0m availability percentage`);
     }
   }
   console.log('-------------');

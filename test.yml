@@ -17,7 +17,43 @@
   url: https://fetch.com/some/post/endpoint
 - name: www.fetchrewards.com index page
   url: https://www.fetchrewards.com/
-- name: random should not respond
-  url: https://www.asdafhjlks.com
-- name: google
-  url: https://www.google.com
+- headers:
+    user-agent: fetch-synthetic-monitor
+  method: GET
+  name: GitHub trending repositories
+  url: https://github.com/trending
+- headers:
+    user-agent: fetch-synthetic-monitor
+  method: GET
+  name: DuckDuckGo search page
+  url: https://duckduckgo.com/
+- body: '{"q":"fetch-synthetic-monitor"}'
+  headers:
+    content-type: application/json
+    user-agent: fetch-synthetic-monitor
+  method: POST
+  name: Post request to httpbin
+  url: https://httpbin.org/delay/5
+- headers:
+    user-agent: fetch-synthetic-monitor
+  method: POST
+  name: Wikipedia 
+  url: https://en.wikipedia.org/wiki/Main_Page
+- headers:
+    user-agent: fetch-synthetic-monitor
+  method: GET
+  name: Wikipedia 
+  url: https://en.wikipedia.org/wiki/Main_Page
+- headers:
+    user-agent: fetch-synthetic-monitor
+  method: GET
+  name: Medium index page
+  url: https://medium.com/
+- headers:
+    user-agent: fetch-synthetic-monitor
+  method: GET
+  name: Node.js
+  url: https://nodejs.org/en/docs
+
+
+
