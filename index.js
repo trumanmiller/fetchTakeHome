@@ -2,8 +2,8 @@ const fs = require('fs');
 const yaml = require('js-yaml');
 
 const configFilePath = process.argv[2];
-const pollInterval = process.argv[3] ?? 15000;
-const timeout = process.argv[4] ?? 500;
+const pollInterval = 15000;
+const timeout = 500;
 
 // it is assumed that your number of urls is smaller then your tcp connection limit, else request batching would need to be implimented
 

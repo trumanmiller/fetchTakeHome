@@ -21,7 +21,7 @@ npm install
 
 ## Configuration
 
-Create a YAML file that lists the APIs you want to check. For each API, specify its name, URL, method(optional), body (optional), and headers (optional).
+Create a YAML file that lists the APIs you want to check. For each API, specify its URL, name (optional), method (optional), body (optional), and headers (optional).
 
 ```yaml
 - name: "API Name 1"
@@ -42,24 +42,22 @@ Create a YAML file that lists the APIs you want to check. For each API, specify 
 Run the script using Node.js. Here's the command format (argument order matters):
 
 ```bash
-node index.js [configFilePath] [pollInterval] [timeout]
+node index.js [configFilePath]
 ```
 
-- `configFilePath` - The path to your YAML configuration file (defaults to `'test.yml'`).
-- `pollInterval` - The interval between subsequent checks (in milliseconds, defaults to 15000ms).
-- `timeout` - The maximum time to wait for a response before considering the request failed (in milliseconds, defaults to 500ms).
+- `configFilePath` - The path to your YAML configuration file.
 
 Here's an example:
 
 ```bash
-node index.js api_config.yml 30000 1000
+node index.js test.yml
 ```
 
-This will start the script with the configuration from `api_config.yml`, making requests every 30 seconds and considering any request that takes longer than 1 second to respond as failed.
+This will start the script with the configuration from `test.yml`, making requests every 30 seconds and considering any request that takes longer than 1 second to respond as failed.
 
 ## Output
 
-The script logs the availability of each API to the console:
+The script logs the availability of each domain to the console:
 
 - If availability is 100%, it's logged in green.
 - If availability is 99%-98%, it's logged in yellow.
